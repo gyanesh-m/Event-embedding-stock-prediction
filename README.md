@@ -1,4 +1,4 @@
-# Event-embedding-stock-prediction
+# Event-embedding-stock-prediction[WIP]
 
 News titles and content were collected for top 10 companies from Nifty50, Nifty50 midcap and Nifty50 smallcap indices according to their market capitalisation ,from the following websites:
   * economictimes.indiatimes.com
@@ -43,13 +43,15 @@ The summary of the news data collected from 1st Jan 2011 to 30th September 2017 
 	USEFUL_FILES
       -> vector-generation.py-Uses pre trained model from spacy to generate the vectors of news title.
       -> pre-processing.py-Rearranges the news data into three subgroups of short , medium and long 
-                           term time period for each of the indices.
+                           term time period for each of the indices. It also aligns stock price date 
+			 	with news date.
       -> model.py-Contains the architecture of the model used for training.
       
   
 ## Note
 
 This model utilises the news data scraped from [this](https://github.com/gyanesh-m/Sentiment-analysis-of-financial-news-data) repo.
+
 
 ## Acknowledgement
 This project was inspired from this [paper](https://www.ijcai.org/Proceedings/15/Papers/329.pdf)
