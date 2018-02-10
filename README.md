@@ -25,6 +25,10 @@ The summary of the news data collected from 1st Jan 2011 to 30th September 2017 
 |tvs motor company|520|sterlite technologies|761|kotak mahindra bank|891
 |Total|8220|Total|2488|Total|31005
 
+## Setup
+
+The dataset can be downloaded from [here](https://drive.google.com/open?id=1GqNLoYnoAe4k2dgGg3eKLJCbqA6DH7zd).
+	
 ## Prerequisites
   Following dependencies are required for this project:
   
