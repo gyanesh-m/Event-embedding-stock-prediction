@@ -1,6 +1,6 @@
-# Event-embedding-stock-prediction[WIP]
+# Event-embedding-stock-prediction
 
-News titles and content were collected for top 10 companies from Nifty50, Nifty50 midcap and Nifty50 smallcap indices according to their market capitalisation ,from the following websites:
+News titles and content were collected for top 10 companies from **Nifty50**, **Nifty50 midcap** and **Nifty50 smallcap** indices according to their market capitalisation ,from the following websites:
   * economictimes.indiatimes.com
   * reuters.com
   * ndtv.com
@@ -8,8 +8,18 @@ News titles and content were collected for top 10 companies from Nifty50, Nifty5
   * moneycontrol.com
   * thehindu.com
   
-However, only news titles were used for this experiment.
-The summary of the news data collected from 1st Jan 2011 to 30th September 2017 is as follows:
+However, only news titles were used for this experiment.The train-test split was **80-20**.
+This model achieved the following accuracy for different indices during a **50 epoch** training session:
+
+|Model for|Accuracy
+| ------------- |:-------------:|
+|Nifty50|53%
+|Nifty50 midcap|62.29%
+|Nifty50 smallcap|62.92%
+
+
+
+The summary of the news data collected from **1st Jan 2011** to **30th September 2017** is as follows:
 
 |Nifty50 midcap cos.|No. of news|Nifty50 smallcap cos.|No. of news|Nifty 50 cos.|No. of news
 | ------------- |:-------------:| -----:| -----:| -----:| -----:|
@@ -28,6 +38,8 @@ The summary of the news data collected from 1st Jan 2011 to 30th September 2017 
 ## Setup
 
 The dataset can be downloaded from [here](https://drive.google.com/open?id=1GqNLoYnoAe4k2dgGg3eKLJCbqA6DH7zd).
+
+The saved models can also be downloaded from [here](https://drive.google.com/drive/folders/1O6p4--1-mIgY7pOy1l0yJrcfEvTvkhjs?usp=sharing).
 	
 ## Prerequisites
   Following dependencies are required for this project:
