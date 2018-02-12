@@ -5,8 +5,11 @@ import pickle
 from keras.callbacks import *
 from keras.utils import to_categorical
 import numpy as np
+from keras import regularizers
+from keras import models
 class EventPrediction(object):
-	def __init__(self,window=3,filters=300,bch=25,epoch=50,train_test_split=0.8):
+
+	def __init__(self,window=3,filters=300,bch=25,epoch=20,train_test_split=0.8):
 		self.window=window
 		self.filters=filters
 		self.batch=bch
@@ -18,6 +21,7 @@ class EventPrediction(object):
 		self.split=train_test_split
 		self.end=None
 		self.model=None
+
 	def load_data(self):
 		choice=input("Enter number to load dataset for-\n1.large\n2.mid\n3.small")
 		if(choice=='1'):
@@ -31,45 +35,61 @@ class EventPrediction(object):
 		with open("./"+name+"-lms_vec_training.pkl","rb")as f:
 			self.data=pickle.load(f)
 		self.end=int(len(self.data['Y'])*self.split)
+
 	def load_model(self):
 		longt=Input(shape=(None,300),name='long')
 		medt=Input(shape=(None,300),name='medium')
 		st=Input(shape=(None,300),name="short")
-		std=Dropout(0.3)(st)
-		lt1=Conv1D(self.filters, self.window, input_shape=(None,300),strides=1, padding='valid', dilation_rate=1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)(longt)
-		lt2=Conv1D(self.filters, 2,input_shape=(None,300), strides=1, padding='valid', dilation_rate=1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)(lt1)
-		lt2d=Dropout(0.3)(lt2)
-		mt1=Conv1D(self.filters, self.window, input_shape=(None,300),strides=1, padding='valid', dilation_rate=1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)(medt)
-		mt2=Conv1D(self.filters, 2,strides=1,input_shape=(None,300), padding='valid', dilation_rate=1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)(mt1)
-		mt2d=Dropout(0.3)(mt2)
+		std=Dropout(0.4)(st)
+		lt1=Conv1D(self.filters, self.window, input_shape=(None,300),strides=1, padding='valid', dilation_rate=1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)(longt)
+		lt2=Conv1D(self.filters, 2,input_shape=(None,300), strides=1, padding='valid', dilation_rate=1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)(lt1)
+		lt2d=Dropout(0.4)(lt2)
+		mt1=Conv1D(self.filters, self.window, input_shape=(None,300),strides=1, padding='valid', dilation_rate=1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)(medt)
+		mt2=Conv1D(self.filters, 2,strides=1,input_shape=(None,300), padding='valid', dilation_rate=1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=regularizers.l2(0.01), bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)(mt1)
+		mt2d=Dropout(0.4)(mt2)
 		ltoutput=GlobalMaxPooling1D()(lt2d)
 		mtoutput=GlobalMaxPooling1D()(mt2d)
 		stoutput=GlobalAveragePooling1D()(st)
 		feature=concatenate([ltoutput,mtoutput,stoutput])
-		h1=Dense(100,activation='relu')(feature)
-		h2=Dense(50,activation='relu')(h1)
-		trend=Dense(2,activation='sigmoid',name='class')(h2)
+		h1=Dense(50,activation='relu')(feature)
+		h2=Dense(10,activation='relu')(h1)
+		trend=Dense(1,activation='sigmoid',name='class')(h2)
 		self.model=Model(inputs=[longt,medt,st],outputs=[trend])
 		self.model.compile(
 			optimizer='adam',
-			loss='categorical_crossentropy',
+			loss='binary_crossentropy',
 			metrics=['accuracy'])
 		self.model.summary()
+
+	def load_saved_model(self):
+		files=os.listdir()
+		file_name=[i for i  in files if '.hdf5' in i]
+		print("Select the saved model to use -")
+		for i,j in enumerate(file_name):
+			print(str(i+1)+"-"+j)
+		choice=input()
+		print("#"*5+"  Using saved model-"+file_name[int(choice)-1]+"  "+"#"*5)
+		model=models.load_model(os.path.join(os.getcwd(),file_name[int(choice)-1]))
+		print("#"*5+"  Model Loaded  "+"#"*5)
+		self.model=model
 
 	def train(self):
 		
 		self.model.fit({"long":self.data['X']['long'][:self.end],"medium":self.data['X']['medium'][:self.end],"short":self.data['X']['short'][:self.end]},
-		{'class':to_categorical(self.data['Y'][:self.end],num_classes=2)},epochs=self.epc,batch_size=self.batch,callbacks=[self.mc,self.tb])
+		{'class':self.data['Y'][:self.end]},epochs=self.epc,batch_size=self.batch,callbacks=[self.mc,self.tb])
+
 	def test(self,data=None):
 		print("#"*5+"  Testing  "+"#"*5)
 		if(data==None):
 			data=self.data
 		loss_metrics=self.model.evaluate({"long":data['X']['long'][self.end:],"medium":data['X']['medium'][self.end:],"short":data['X']['short'][self.end:]},
-		{'class':to_categorical(data['Y'][self.end:],num_classes=2)},batch_size=1)
+		{'class':data['Y'][self.end:]},batch_size=1)
 		for i,j in enumerate(loss_metrics):
 			print(self.model.metrics_names[i],j)
+
 predict=EventPrediction()
 predict.load_data()
-predict.load_model()
-predict.train()
+#predict.load_model()
+predict.load_saved_model()
+#predict.train()
 predict.test()
